@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const db = require('../config/configDB.js');
 const Empleados = require('../models/Empleados');
+const Egresos = require('../models/Egresos');
 
 const Ingresos = db.define('ingresos',{
     id: {
@@ -13,8 +14,16 @@ const Ingresos = db.define('ingresos',{
     },
     hora : {
         type: Sequelize.TIME
+    },
+    nota: {
+        type: Sequelize.TEXT
+    },
+    url: {
+        type: Sequelize.STRING(100)
     }
 });
-Ingresos.belongsTo(Empleados, { as: 'Empleado' });
+
+//Ingresos.belongsTo(Empleados, { as: 'Empleado' });
+Ingresos.belongsTo(Egresos, { as: 'Egreso', allowNull: true });
 
 module.exports = Ingresos;

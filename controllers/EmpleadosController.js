@@ -22,4 +22,4 @@ const getEmpleado = async(id) => {
 module.exports = {
     getEmpleados,
     getEmpleado
-}
+};

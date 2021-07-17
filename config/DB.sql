@@ -38,8 +38,8 @@ INSERT INTO empleados (Nombre, Apellido) VALUES
 ('MARIA C', 'VELASCO');
 
 /* Modificar tipo de dato de tablas */
-alter table ingresos alter column fecha Date
-alter table egresos alter column fecha Date
+alter table ingresos alter column fecha Date;
+alter table egresos alter column fecha Date;
 
 /* Ejemplos insercion */
 insert into ingresos (fecha, hora, EmpleadoId) values ('2021/07/03', '10:21', 1)

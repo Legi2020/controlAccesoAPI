@@ -3,30 +3,33 @@ const Ingresos = require("../models/Ingresos.js");
 const { getFechaActual } = require("../helpers/functions");
 const EmpleadosController = require('./EmpleadosController');
 
+
 const registrarIngreso = async (req, res) => {
   const fechaActual = getFechaActual();
-  const idEmpleado = req.body.idEmpleado;
+  const empleadoId = req.body.data.idEmpleado;
+  const nota = req.body.data.nota;
+  const empleado = await EmpleadosController.getEmpleado(empleadoId);
 
-  const empleado = await EmpleadosController.getEmpleado(idEmpleado);
   if(!empleado){
-    return res.status(400).json({
-      error: true,
-      message: 'No existe el empleado'
-    })
-  };
+      return res.status(400).json({
+        error: true,
+        message: 'No existe el empleado'
+      })
+    };
 
-  let ingreso = await getIngreso(idEmpleado, fechaActual.fecha);
+  let ingreso = await getIngresoSinEgreso(empleadoId, fechaActual.fecha);
   if (ingreso) {
-    return res.status(400).json({
+    return res.status(200).json({
       error: true,
-      message: "Ya hay un ingreso registrado",
+      message: "Ya hay un ingreso registrado, sin un egreso",
     });
   };
 
   ingreso = await Ingresos.create({
     fecha: fechaActual.fecha,
     hora: fechaActual.hora,
-    EmpleadoId: req.body.idEmpleado,
+    nota,
+    empleadoId
   });
 
   return res.status(200).json({
@@ -61,11 +64,12 @@ const getIngresoEmpleadoFechaActual = async (req, res) => {
 };
 
 /** Metodos  */
-const getIngreso = async(EmpleadoId, fecha) => {
+const getIngresoSinEgreso = async(empleadoId, fecha) => {
   let ingreso = await Ingresos.findOne({
     where: {
-        EmpleadoId,
-        fecha
+        empleadoId,
+        fecha,
+        EgresoId: null
     }
   });
   return ingreso;
@@ -80,10 +84,21 @@ const getIngresos = async(fecha) => {
   return ingreso;
 };
 
+const getIngresosEmpleado = async(empleadoId, fecha) => {
+  const ingresos = await Ingresos.findAll({
+    where: {
+      empleadoId,
+      fecha
+    }
+  });
+  return ingresos;
+};
+
 module.exports = {
   registrarIngreso,
   getIngresosFechaActual,
   getIngresoEmpleadoFechaActual,
-  getIngreso,
-  getIngresos
+  getIngresoSinEgreso,
+  getIngresos,
+  getIngresosEmpleado
 };

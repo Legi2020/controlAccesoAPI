@@ -1,22 +1,29 @@
-const Empleados = require('../models/Empleados.js');
-const Ingresos = require('../models/Ingresos.js');
-const Egresos = require('../models/Egresos.js');
-const { getFechaActual } = require('../helpers/functions');
-const IngresosController = require('./IngresosController');
-const EgresosController = require('./EgresosController');
+const Empleados = require("../models/Empleados.js");
+const Ingresos = require("../models/Ingresos.js");
+const Egresos = require("../models/Egresos.js");
+const { getFechaActual } = require("../helpers/functions");
+const IngresosController = require("./IngresosController");
+const EgresosController = require("./EgresosController");
+const EmpleadosController = require("./EmpleadosController");
 
-const getEmpleadosIngresoEgresoHoy = async(req, res) => {
-    const fechaActual = getFechaActual();
-    const ingresos = await IngresosController.getIngresos(fechaActual.fecha);
-    const egresos = await EgresosController.getEgresos(fechaActual.fecha);
+const getEmpleadosIngresoEgreso = async (req, res) => {
+  const fechaActual = getFechaActual();
 
-    return res.status(200).json({
-        error: false,
-        ingresos,
-        egresos
-    })
+  const empleados = await Empleados.findAll();
+  let ingresos = await IngresosController.getIngresos(
+      fechaActual.fecha,
+  );
+
+  let egresos = await EgresosController.getEgresos(fechaActual.fecha);
+
+  res.status(200).json({
+    error: false,
+    ingresos,
+    empleados,
+    egresos,
+  });
 };
 
 module.exports = {
-    getEmpleadosIngresoEgresoHoy
-}
+  getEmpleadosIngresoEgreso,
+};

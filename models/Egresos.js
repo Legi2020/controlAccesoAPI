@@ -13,8 +13,14 @@ const Egresos = db.define('egresos',{
     },
     hora : {
         type: Sequelize.TIME
+    },
+    nota: {
+        type: Sequelize.TEXT
+    },
+    url: {
+        type: Sequelize.STRING(100)
     }
 });
-Egresos.belongsTo(Empleados, { as: 'Empleado' });
+//Egresos.belongsTo(Empleados, { as: 'Empleado' });
 
 module.exports = Egresos;
