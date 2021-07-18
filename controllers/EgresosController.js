@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const Empleados = require("../models/Empleados.js");
 const Egresos = require("../models/Egresos.js");
 const { getFechaActual } = require("../helpers/functions");
@@ -9,7 +10,7 @@ const registrarEgreso = async (req, res) => {
   const empleadoId = req.body.data.idEmpleado;
   const nota = req.body.data.nota;
   const empleado = await EmpleadosController.getEmpleado(empleadoId);
-  
+
   if (!empleado) {
     return res.status(400).json({
       error: true,
@@ -40,7 +41,7 @@ const registrarEgreso = async (req, res) => {
 
   return res.status(200).json({
     error: false,
-    message: "egreso registrado",
+    message: "Egreso registrado",
     egreso,
   });
 };
@@ -54,23 +55,33 @@ const getEgresosFechaActual = async (req, res) => {
   });
 };
 
-const getEgresoEmpleado = async (req, res) => {
-  const idEmpleado = req.params.id;
-  const fechaActual = getFechaActual();
-  const egreso = await getEgreso(idEmpleado, fechaActual.fecha);
+const getEgresosEmpleado = async (req, res) => {
+  const idEmpleado = req.body.data.id;
+  const fechaDesde = req.body.data.fechaDesde;
+  const fechaHasta = req.body.data.fechaHasta;
+
+  const egresos = await getEgresosDesdeHasta(
+    idEmpleado,
+    fechaDesde,
+    fechaHasta,
+  );
+
   return res.status(200).json({
     error: false,
-    egreso,
+    egresos,
   });
 };
 
 /** Metodos */
-const getEgreso = async (empleadoId, fecha) => {
-  let egreso = await Egresos.findOne({
+const getEgresosDesdeHasta = async (empleadoId, fechaDesde, fechaHasta) => {
+  let egreso = await Egresos.findAll({
     where: {
       empleadoId,
-      fecha,
+      fecha: {
+        [Op.between]: [fechaDesde, fechaHasta],
+      },
     },
+    order: [["fecha", "DESC"],["hora", "DESC"]],
   });
   return egreso;
 };
@@ -87,6 +98,6 @@ const getEgresos = async (fecha) => {
 module.exports = {
   registrarEgreso,
   getEgresosFechaActual,
-  getEgresoEmpleado,
-  getEgresos
+  getEgresosEmpleado,
+  getEgresos,
 };

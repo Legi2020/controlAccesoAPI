@@ -9,6 +9,14 @@ const getEmpleados = async(req, res) => {
     });
 };
 
+const getEmpleadoById = async(req, res) => {
+    const empleados = await Empleados.findOne({ where: { id: req.params.id }});
+    return res.status(200).json({
+        error:false,
+        empleados
+    });
+};
+
 /** Metodos */
 const getEmpleado = async(id) => {
     const empleado = await Empleados.findOne({
@@ -21,5 +29,6 @@ const getEmpleado = async(id) => {
 
 module.exports = {
     getEmpleados,
-    getEmpleado
+    getEmpleado,
+    getEmpleadoById 
 };

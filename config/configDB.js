@@ -14,9 +14,7 @@ const db = new Sequelize(process.env.BD_NAME, process.env.BD_USER, process.env.B
         acquire: 3000,
         idle: 10000
     },
-    operatorAliases: false,
     logging: false,
-    freezeTableName: true
 });
 
 module.exports = db;

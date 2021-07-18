@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const Empleados = require("../models/Empleados.js");
 const Ingresos = require("../models/Ingresos.js");
 const { getFechaActual } = require("../helpers/functions");
@@ -24,6 +25,8 @@ const registrarIngreso = async (req, res) => {
       message: "Ya hay un ingreso registrado, sin un egreso",
     });
   };
+
+  console.log(fechaActual.fecha);
 
   ingreso = await Ingresos.create({
     fecha: fechaActual.fecha,
@@ -56,14 +59,43 @@ const getIngresoEmpleadoFechaActual = async (req, res) => {
   const idEmpleado = req.params.id;
   const fechaActual = getFechaActual();
   const ingreso = await getIngreso(idEmpleado, fechaActual.fecha);
-
   return res.status(200).json({
     error: false,
     ingreso,
   });
 };
 
-/** Metodos  */
+const getIngresosEmpleado = async (req, res) => {
+  const idEmpleado = req.body.data.id;
+  const fechaDesde = req.body.data.fechaDesde;
+  const fechaHasta = req.body.data.fechaHasta;
+
+  const ingresos = await getIngresosDesdeHasta(
+    idEmpleado,
+    fechaDesde,
+    fechaHasta,
+  );
+
+  return res.status(200).json({
+    error: false,
+    ingresos,
+  });
+};
+
+/** Metodos */
+const getIngresosDesdeHasta = async (empleadoId, fechaDesde, fechaHasta) => {
+  let ingresos = await Ingresos.findAll({
+    where: {
+      empleadoId,
+      fecha: {
+        [Op.between]: [fechaDesde, fechaHasta],
+      },
+    },
+    order: [["fecha", "DESC"], ["hora", "DESC"]],
+  });
+  return ingresos;
+};
+
 const getIngresoSinEgreso = async(empleadoId, fecha) => {
   let ingreso = await Ingresos.findOne({
     where: {
@@ -84,7 +116,7 @@ const getIngresos = async(fecha) => {
   return ingreso;
 };
 
-const getIngresosEmpleado = async(empleadoId, fecha) => {
+/* const getIngresosEmpleado = async(empleadoId, fecha) => {
   const ingresos = await Ingresos.findAll({
     where: {
       empleadoId,
@@ -92,7 +124,7 @@ const getIngresosEmpleado = async(empleadoId, fecha) => {
     }
   });
   return ingresos;
-};
+}; */
 
 module.exports = {
   registrarIngreso,

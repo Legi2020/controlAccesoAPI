@@ -7,9 +7,9 @@ require("dotenv").config({ path: "data.env" });
 const { validarApiKey } = require("./controllers/Auth");
 
 /** Importante sino la fecha se guarda con 1 dia menos en la BD */
-const moment = require("moment-timezone");
-moment.tz.setDefault("UTC-3");
-moment.locale("es");
+const moment = require('moment-timezone');
+moment.tz.setDefault('UTC');
+moment.locale('es');
 
 /* Configuración DB */
 require("./models/Empleados");
