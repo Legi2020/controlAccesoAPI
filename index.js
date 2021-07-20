@@ -1,10 +1,8 @@
 const express = require("express");
 const db = require("./config/configDB.js");
 const router = require("./routes/index.js");
-const path = require("path");
 const cors = require("cors");
 require("dotenv").config({ path: "data.env" });
-const { validarApiKey } = require("./controllers/Auth");
 
 /** Importante sino la fecha se guarda con 1 dia menos en la BD */
 const moment = require('moment-timezone');
@@ -19,7 +17,7 @@ db.sync()
   .then(() => console.log("Base de datos conectada."))
   .catch((error) => console.log(error));
 
-const config = {
+const configCors = {
   application: {
     cors: {
       server: [
@@ -35,7 +33,7 @@ const config = {
 const app = express();
 
 // CORS
-app.use(cors(config.application.cors.server));
+app.use(cors(configCors.application.cors.server));
 
 /* Definición de Puerto */
 const port = process.env.port || process.env.PORT_APP;

@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const { login, verificarToken } = require('../controllers/Auth');
 const {
   getEmpleadosIngresoEgreso,
-} = require("../controllers/InformesController.js");
+} = require("../controllers/InformesController");
 const {
   registrarIngreso,
   getIngresosFechaActual,
@@ -18,12 +19,15 @@ const {
   getEmpleadoById,
 } = require("../controllers/EmpleadosController");
 
+/**Login */
+router.post("/login", login);
+
 /**Informes */
 router.get("/informe", getEmpleadosIngresoEgreso);
 
 /**Empleados */
-router.get("/empleado", getEmpleados);
-router.get("/empleado/:id", getEmpleadoById);
+router.get("/empleado", verificarToken, getEmpleados);
+router.get("/empleado/:id", verificarToken, getEmpleadoById);
 
 /**Ingresos */
 router.post("/ingreso", registrarIngreso);
