@@ -5,6 +5,11 @@ const db = new Sequelize(process.env.BD_NAME, process.env.BD_USER, process.env.B
     host: process.env.BD_HOST,
     port: process.env.BD_PORT,
     dialect: 'mssql',
+    dialectOptions: {
+        dateStrings: true,
+        typeCast: true,
+    },
+    timezone: 'America/Buenos_Aires',
     define: {
         timestamps: false
     },

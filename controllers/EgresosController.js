@@ -1,3 +1,4 @@
+const Sequelize = require("sequelize");
 const { Op } = require("sequelize");
 const Empleados = require("../models/Empleados.js");
 const Egresos = require("../models/Egresos.js");
@@ -59,6 +60,8 @@ const getEgresosEmpleado = async (req, res) => {
   const idEmpleado = req.body.data.id;
   const fechaDesde = req.body.data.fechaDesde;
   const fechaHasta = req.body.data.fechaHasta;
+  const horaEgreso = req.body.data.horaEgreso;
+  let tiempoExtra = null;
 
   const egresos = await getEgresosDesdeHasta(
     idEmpleado,
@@ -66,9 +69,19 @@ const getEgresosEmpleado = async (req, res) => {
     fechaHasta,
   );
 
+  if (horaEgreso) {
+    tiempoExtra = await getRetrasoEgreso(
+      idEmpleado,
+      fechaDesde,
+      fechaHasta,
+      horaEgreso,
+    );
+  }
+
   return res.status(200).json({
     error: false,
     egresos,
+    tiempoExtra
   });
 };
 
@@ -81,7 +94,10 @@ const getEgresosDesdeHasta = async (empleadoId, fechaDesde, fechaHasta) => {
         [Op.between]: [fechaDesde, fechaHasta],
       },
     },
-    order: [["fecha", "DESC"],["hora", "DESC"]],
+    order: [
+      ["fecha", "DESC"],
+      ["hora", "DESC"],
+    ],
   });
   return egreso;
 };
@@ -93,6 +109,39 @@ const getEgresos = async (fecha) => {
     },
   });
   return egreso;
+};
+
+const getRetrasoEgreso = async(
+  empleadoId,
+  fechaDesde,
+  fechaHasta,
+  horaEgreso,
+) => {
+  const egresos = await Egresos.findAll({
+    where: {
+      empleadoId,
+      fecha: {
+        [Op.between]: [fechaDesde, fechaHasta],
+      },
+    },
+    attributes: [[Sequelize.fn("max", Sequelize.col("hora")), "hora"]],
+    group: ["fecha"],
+  });
+
+  let retraso = 0;
+  egresos.forEach((hora) => {
+    let egreso = new Date('1970-01-01 '+horaEgreso+':00Z');
+    let egresoRegistrado = new Date(hora.hora);
+    retraso += ((egresoRegistrado.getTime() - egreso.getTime()) > 0) ? egresoRegistrado.getTime() - egreso.getTime() : 0;
+    //console.log(ingreso);
+   // console.log( ingresoRegistrado.getMilliseconds() - ingreso.getMilliseconds());
+  });
+  retraso = Math.floor((retraso/1000/60) << 0);
+  retrasoFinal = {
+    tiempo: retraso,
+    unidad: 'min'
+  }
+  return retrasoFinal;
 };
 
 module.exports = {

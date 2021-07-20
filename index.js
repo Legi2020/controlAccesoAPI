@@ -8,8 +8,8 @@ const { validarApiKey } = require("./controllers/Auth");
 
 /** Importante sino la fecha se guarda con 1 dia menos en la BD */
 const moment = require('moment-timezone');
-moment.tz.setDefault('UTC-3');
 moment.locale('es');
+moment.tz.setDefault('UTC-3');
 
 /* Configuración DB */
 require("./models/Empleados");

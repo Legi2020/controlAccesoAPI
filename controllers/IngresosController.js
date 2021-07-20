@@ -1,8 +1,9 @@
+const Sequelize = require("sequelize");
 const { Op } = require("sequelize");
 const Empleados = require("../models/Empleados.js");
 const Ingresos = require("../models/Ingresos.js");
 const { getFechaActual } = require("../helpers/functions");
-const EmpleadosController = require('./EmpleadosController');
+const EmpleadosController = require("./EmpleadosController");
 
 
 const registrarIngreso = async (req, res) => {
@@ -11,12 +12,12 @@ const registrarIngreso = async (req, res) => {
   const nota = req.body.data.nota;
   const empleado = await EmpleadosController.getEmpleado(empleadoId);
 
-  if(!empleado){
-      return res.status(400).json({
-        error: true,
-        message: 'No existe el empleado'
-      })
-    };
+  if (!empleado) {
+    return res.status(400).json({
+      error: true,
+      message: "No existe el empleado",
+    });
+  }
 
   let ingreso = await getIngresoSinEgreso(empleadoId, fechaActual.fecha);
   if (ingreso) {
@@ -24,15 +25,13 @@ const registrarIngreso = async (req, res) => {
       error: true,
       message: "Ya hay un ingreso registrado, sin un egreso",
     });
-  };
-
-  console.log(fechaActual.fecha);
+  }
 
   ingreso = await Ingresos.create({
     fecha: fechaActual.fecha,
     hora: fechaActual.hora,
     nota,
-    empleadoId
+    empleadoId,
   });
 
   return res.status(200).json({
@@ -50,7 +49,7 @@ const getIngresosFechaActual = async (req, res) => {
     },
   });
   return res.json({
-    error:false,
+    error: false,
     ingresos,
   });
 };
@@ -69,6 +68,8 @@ const getIngresosEmpleado = async (req, res) => {
   const idEmpleado = req.body.data.id;
   const fechaDesde = req.body.data.fechaDesde;
   const fechaHasta = req.body.data.fechaHasta;
+  const horaIngreso = req.body.data.horaIngreso;
+  let retraso = null;
 
   const ingresos = await getIngresosDesdeHasta(
     idEmpleado,
@@ -76,9 +77,19 @@ const getIngresosEmpleado = async (req, res) => {
     fechaHasta,
   );
 
+  if(horaIngreso){
+    retraso = await getRetrasoIngreso(
+      idEmpleado,
+      fechaDesde,
+      fechaHasta,
+      horaIngreso,
+    );
+  }
+
   return res.status(200).json({
     error: false,
     ingresos,
+    retraso,
   });
 };
 
@@ -91,29 +102,65 @@ const getIngresosDesdeHasta = async (empleadoId, fechaDesde, fechaHasta) => {
         [Op.between]: [fechaDesde, fechaHasta],
       },
     },
-    order: [["fecha", "DESC"], ["hora", "DESC"]],
+    order: [
+      ["fecha", "DESC"],
+      ["hora", "DESC"],
+    ],
   });
   return ingresos;
 };
 
-const getIngresoSinEgreso = async(empleadoId, fecha) => {
+const getIngresoSinEgreso = async (empleadoId, fecha) => {
   let ingreso = await Ingresos.findOne({
     where: {
-        empleadoId,
-        fecha,
-        EgresoId: null
-    }
+      empleadoId,
+      fecha,
+      EgresoId: null,
+    },
   });
   return ingreso;
 };
 
-const getIngresos = async(fecha) => {
+const getIngresos = async (fecha) => {
   let ingreso = await Ingresos.findAll({
     where: {
-        fecha
-    }
+      fecha,
+    },
   });
   return ingreso;
+};
+
+const getRetrasoIngreso = async (
+  empleadoId,
+  fechaDesde,
+  fechaHasta,
+  horaIngreso,
+) => {
+  const ingresos = await Ingresos.findAll({
+    where: {
+      empleadoId,
+      fecha: {
+        [Op.between]: [fechaDesde, fechaHasta],
+      },
+    },
+    attributes: [[Sequelize.fn("min", Sequelize.col("hora")), "hora"]],
+    group: ["fecha"],
+  });
+  let retraso = 0;
+  ingresos.forEach((hora) => {
+    console.log(horaIngreso);
+    let ingreso = new Date('1970-01-01 '+horaIngreso+':00Z');
+    let ingresoRegistrado = new Date(hora.hora);
+    retraso += ((ingresoRegistrado.getTime() - ingreso.getTime()) > 0) ? ingresoRegistrado.getTime() - ingreso.getTime() : 0;
+    //console.log(ingreso);
+   // console.log( ingresoRegistrado.getMilliseconds() - ingreso.getMilliseconds());
+  });
+  retraso = Math.floor((retraso/1000/60) << 0);
+  retrasoFinal = {
+    tiempo: retraso,
+    unidad: 'min'
+  }
+  return retrasoFinal;
 };
 
 /* const getIngresosEmpleado = async(empleadoId, fecha) => {
@@ -132,5 +179,5 @@ module.exports = {
   getIngresoEmpleadoFechaActual,
   getIngresoSinEgreso,
   getIngresos,
-  getIngresosEmpleado
+  getIngresosEmpleado,
 };
