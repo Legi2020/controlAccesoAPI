@@ -3,15 +3,18 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 const login = async (req, res, next) => {
-  if (!req.body.user || !req.body.password) {
+  const user = req.body.data.user;
+  const password = req.body.data.password;
+
+  if (!user  || !password) {
     return res.json({
       error: true,
-      message: "Debe completar ambos cambios",
+      message: "Debe completar ambos campos",
     });
   }
   const admin = await Admin.findOne({
     where: {
-      user: req.body.user,
+      user
     },
   });
   if (!admin) {
@@ -22,7 +25,7 @@ const login = async (req, res, next) => {
   }
 
   const verificarPassword = bcrypt.compareSync(
-    req.body.password,
+    password,
     admin.password,
   );
   if (!verificarPassword) {
@@ -64,7 +67,30 @@ const verificarToken = (req, res, next) => {
   }
 };
 
+const verificarTokenUser = (req, res) => {
+  const token = req.body.data.token;
+  if (token) {
+    jwt.verify(token, process.env.LLAVE, (err, decoded) => {
+      if (err) {
+        return res.json({error: true, message: 'Token inválido' });
+      } else {
+        req.decoded = decoded;
+        res.json({
+          error: false,
+          message: 'Token valido'
+        });
+      }
+    });
+  } else {
+    res.json({
+      error: true,
+      mensaje: "Token no proveída.",
+    });
+  }
+}
+
 module.exports = {
   login,
   verificarToken,
+  verificarTokenUser
 };

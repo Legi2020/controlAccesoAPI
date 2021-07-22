@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { login, verificarToken } = require('../controllers/Auth');
+const {
+  login,
+  verificarToken,
+  verificarTokenUser
+} = require("../controllers/Auth");
 const {
   getEmpleadosIngresoEgreso,
 } = require("../controllers/InformesController");
@@ -21,22 +25,23 @@ const {
 
 /**Login */
 router.post("/login", login);
+router.post("/verificar-token", verificarTokenUser);
 
 /**Informes */
 router.get("/informe", getEmpleadosIngresoEgreso);
 
 /**Empleados */
-router.get("/empleado", verificarToken, getEmpleados);
-router.get("/empleado/:id", verificarToken, getEmpleadoById);
+router.get("/empleado", getEmpleados);
+router.get("/empleado/:id", getEmpleadoById);
 
 /**Ingresos */
 router.post("/ingreso", registrarIngreso);
 router.get("/ingreso/hoy", getIngresosFechaActual);
-router.post("/ingresos", getIngresosEmpleado);
+router.post("/ingresos", verificarToken, getIngresosEmpleado);
 
 /**Egresos */
 router.post("/egreso", registrarEgreso);
 router.get("/egreso/hoy", getEgresosFechaActual);
-router.post("/egresos", getEgresosEmpleado);
+router.post("/egresos", verificarToken, getEgresosEmpleado);
 
 module.exports = router;

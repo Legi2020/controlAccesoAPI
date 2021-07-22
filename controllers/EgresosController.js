@@ -68,7 +68,7 @@ const getEgresosEmpleado = async (req, res) => {
     fechaDesde,
     fechaHasta,
   );
-
+  
   if (horaEgreso) {
     tiempoExtra = await getRetrasoEgreso(
       idEmpleado,
