@@ -133,8 +133,6 @@ const getRetrasoEgreso = async(
     let egreso = new Date('1970-01-01 '+horaEgreso+':00Z');
     let egresoRegistrado = new Date(hora.hora);
     retraso += ((egresoRegistrado.getTime() - egreso.getTime()) > 0) ? egresoRegistrado.getTime() - egreso.getTime() : 0;
-    //console.log(ingreso);
-   // console.log( ingresoRegistrado.getMilliseconds() - ingreso.getMilliseconds());
   });
   retraso = Math.floor((retraso/1000/60) << 0);
   retrasoFinal = {

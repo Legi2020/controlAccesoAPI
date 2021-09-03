@@ -148,12 +148,9 @@ const getRetrasoIngreso = async (
   });
   let retraso = 0;
   ingresos.forEach((hora) => {
-    console.log(horaIngreso);
     let ingreso = new Date('1970-01-01 '+horaIngreso+':00Z');
     let ingresoRegistrado = new Date(hora.hora);
     retraso += ((ingresoRegistrado.getTime() - ingreso.getTime()) > 0) ? ingresoRegistrado.getTime() - ingreso.getTime() : 0;
-    //console.log(ingreso);
-   // console.log( ingresoRegistrado.getMilliseconds() - ingreso.getMilliseconds());
   });
   retraso = Math.floor((retraso/1000/60) << 0);
   retrasoFinal = {
