@@ -12,11 +12,13 @@ const {
   registrarIngreso,
   getIngresosFechaActual,
   getIngresosEmpleado,
+  editarNotaIngreso,
 } = require("../controllers/IngresosController");
 const {
   registrarEgreso,
   getEgresosFechaActual,
   getEgresosEmpleado,
+  editarNotaEgreso,
 } = require("../controllers/EgresosController");
 const {
   getEmpleados,
@@ -35,11 +37,13 @@ router.get("/empleado", getEmpleados);
 router.get("/empleado/:id", getEmpleadoById);
 
 /**Ingresos */
+router.put("/ingreso/nota", editarNotaIngreso); //Nuevo
 router.post("/ingreso", registrarIngreso);
 router.get("/ingreso/hoy", getIngresosFechaActual);
 router.post("/ingresos", verificarToken, getIngresosEmpleado);
 
 /**Egresos */
+router.put("/egreso/nota", editarNotaEgreso); //Nuevo
 router.post("/egreso", registrarEgreso);
 router.get("/egreso/hoy", getEgresosFechaActual);
 router.post("/egresos", verificarToken, getEgresosEmpleado);

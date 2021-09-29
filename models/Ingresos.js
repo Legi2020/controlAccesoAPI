@@ -10,7 +10,7 @@ const Ingresos = db.define('ingresos',{
         autoIncrement: true
     },
     fecha: {
-        type: Sequelize.DATE
+        type: Sequelize.DATEONLY
     },
     hora : {
         type: Sequelize.TIME

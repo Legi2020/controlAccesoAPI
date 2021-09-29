@@ -170,6 +170,25 @@ const getRetrasoIngreso = async (
   return ingresos;
 }; */
 
+/*TEST*/
+const editarNotaIngreso = async (req, res) => {
+  const id = req.body.data.idIngreso;
+  const nota = req.body.data.nota;
+  const ingreso = await Ingresos.findOne({
+    id,
+  });
+  if(nota && nota !== ''){
+    ingreso.nota = nota;
+    ingreso.save();
+  }
+  return res.status(200).json({
+    error: false,
+    message: "Nota guardada.",
+    ingreso,
+  });
+};
+
+
 module.exports = {
   registrarIngreso,
   getIngresosFechaActual,
@@ -177,4 +196,5 @@ module.exports = {
   getIngresoSinEgreso,
   getIngresos,
   getIngresosEmpleado,
+  editarNotaIngreso,
 };

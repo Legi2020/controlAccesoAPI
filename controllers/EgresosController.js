@@ -142,9 +142,28 @@ const getRetrasoEgreso = async(
   return retrasoFinal;
 };
 
+/*TEST*/
+const editarNotaEgreso = async (req, res) => {
+  const id = req.body.data.idEgreso;
+  const nota = req.body.data.nota;
+  const egreso = await Egresos.findOne({
+    id,
+  });
+  if(nota && nota !== ''){
+    egreso.nota = nota;
+    egreso.save();
+  }
+  return res.status(200).json({
+    error: false,
+    message: "Nota guardada.",
+    egreso,
+  });
+};
+
 module.exports = {
   registrarEgreso,
   getEgresosFechaActual,
   getEgresosEmpleado,
   getEgresos,
+  editarNotaEgreso,
 };
