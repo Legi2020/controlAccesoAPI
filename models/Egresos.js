@@ -9,12 +9,15 @@ const Egresos = db.define('egresos',{
         autoIncrement: true
     },
     fecha: {
-        type: Sequelize.DATE
+        type: Sequelize.DATEONLY
     },
     hora : {
         type: Sequelize.TIME
     },
     nota: {
+        type: Sequelize.TEXT
+    },
+    notaAdmin:{
         type: Sequelize.TEXT
     },
     url: {

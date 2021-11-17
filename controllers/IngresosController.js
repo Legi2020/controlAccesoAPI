@@ -160,15 +160,23 @@ const getRetrasoIngreso = async (
   return retrasoFinal;
 };
 
-/* const getIngresosEmpleado = async(empleadoId, fecha) => {
-  const ingresos = await Ingresos.findAll({
-    where: {
-      empleadoId,
-      fecha
-    }
+const addNotaAdminIngreso = async (req, res) => {
+  const { idIngreso, notaAdmin } = req.body.data;
+  const ingreso = await Ingresos.findByPk(idIngreso);
+  if (!ingreso) {
+      return res.status(200).json({
+        error: true,
+        message: "No existe el ingreso",
+    });
+  }
+  ingreso.notaAdmin = notaAdmin;
+  ingreso.save();
+  return res.status(200).json({
+    error: false,
+    message: "Nota agregada correctamente",
+    ingreso,
   });
-  return ingresos;
-}; */
+}
 
 module.exports = {
   registrarIngreso,
@@ -177,4 +185,5 @@ module.exports = {
   getIngresoSinEgreso,
   getIngresos,
   getIngresosEmpleado,
+  addNotaAdminIngreso
 };

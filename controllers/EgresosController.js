@@ -142,9 +142,28 @@ const getRetrasoEgreso = async(
   return retrasoFinal;
 };
 
+const addNotaAdminEgreso = async (req, res) => {
+  const { idEgreso, notaAdmin } = req.body.data;
+  const egreso = await Egresos.findByPk(idEgreso);
+  if (!egreso) {
+      return res.status(200).json({
+        error: true,
+        message: "No existe el egreso",
+    });
+  }
+  egreso.notaAdmin = notaAdmin;
+  egreso.save();
+  return res.status(200).json({
+    error: false,
+    message: "Nota agregada correctamente",
+    egreso,
+  });
+}
+
 module.exports = {
   registrarEgreso,
   getEgresosFechaActual,
   getEgresosEmpleado,
   getEgresos,
+  addNotaAdminEgreso
 };
