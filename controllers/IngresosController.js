@@ -4,6 +4,7 @@ const Empleados = require("../models/Empleados.js");
 const Ingresos = require("../models/Ingresos.js");
 const { getFechaActual } = require("../helpers/functions");
 const EmpleadosController = require("./EmpleadosController");
+const Egresos = require("../models/Egresos.js");
 
 
 const registrarIngreso = async (req, res) => {
@@ -19,8 +20,11 @@ const registrarIngreso = async (req, res) => {
     });
   }
 
-  let ingreso = await getIngresoSinEgreso(empleadoId, fechaActual.fecha);
-  if (ingreso) {
+  let egreso = await Egresos.findOne({
+    where: { fecha: fechaActual.fecha, hora:{ [Op.is]: null } , empleadoId },
+  });
+
+  if (egreso) {
     return res.status(200).json({
       error: true,
       message: "Ya hay un ingreso registrado, sin un egreso",
@@ -32,6 +36,11 @@ const registrarIngreso = async (req, res) => {
     hora: fechaActual.hora,
     nota,
     empleadoId,
+  });
+
+  await Egresos.create({
+    fecha: fechaActual.fecha,
+    empleadoId
   });
 
   return res.status(200).json({
@@ -103,22 +112,10 @@ const getIngresosDesdeHasta = async (empleadoId, fechaDesde, fechaHasta) => {
       },
     },
     order: [
-      ["fecha", "DESC"],
-      ["hora", "DESC"],
+      ["id", "DESC"],
     ],
   });
   return ingresos;
-};
-
-const getIngresoSinEgreso = async (empleadoId, fecha) => {
-  let ingreso = await Ingresos.findOne({
-    where: {
-      empleadoId,
-      fecha,
-      EgresoId: null,
-    },
-  });
-  return ingreso;
 };
 
 const getIngresos = async (fecha) => {
@@ -182,7 +179,6 @@ module.exports = {
   registrarIngreso,
   getIngresosFechaActual,
   getIngresoEmpleadoFechaActual,
-  getIngresoSinEgreso,
   getIngresos,
   getIngresosEmpleado,
   addNotaAdminIngreso

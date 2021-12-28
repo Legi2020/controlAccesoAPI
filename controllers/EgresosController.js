@@ -1,10 +1,8 @@
 const Sequelize = require("sequelize");
 const { Op } = require("sequelize");
-const Empleados = require("../models/Empleados.js");
 const Egresos = require("../models/Egresos.js");
 const { getFechaActual } = require("../helpers/functions");
 const EmpleadosController = require("./EmpleadosController");
-const IngresosController = require("./IngresosController");
 
 const registrarEgreso = async (req, res) => {
   const fechaActual = getFechaActual();
@@ -19,26 +17,21 @@ const registrarEgreso = async (req, res) => {
     });
   }
 
-  const ingreso = await IngresosController.getIngresoSinEgreso(
-    empleadoId,
-    fechaActual.fecha,
-  );
-  if (!ingreso) {
+  let egreso = await Egresos.findOne({
+    where: { fecha: fechaActual.fecha, hora: { [Op.is]: null }, empleadoId },
+  });
+
+  if (!egreso) {
     return res.status(200).json({
       error: true,
       message: "No se registro un ingreso",
     });
   }
 
-  egreso = await Egresos.create({
-    fecha: fechaActual.fecha,
-    hora: fechaActual.hora,
-    nota,
-    empleadoId,
-  });
+  egreso.nota = nota;
+  egreso.hora = fechaActual.hora;
 
-  ingreso.EgresoId = egreso.id;
-  ingreso.save();
+  egreso.save();
 
   return res.status(200).json({
     error: false,
@@ -68,7 +61,7 @@ const getEgresosEmpleado = async (req, res) => {
     fechaDesde,
     fechaHasta,
   );
-  
+
   if (horaEgreso) {
     tiempoExtra = await getRetrasoEgreso(
       idEmpleado,
@@ -81,7 +74,7 @@ const getEgresosEmpleado = async (req, res) => {
   return res.status(200).json({
     error: false,
     egresos,
-    tiempoExtra
+    tiempoExtra,
   });
 };
 
@@ -95,8 +88,7 @@ const getEgresosDesdeHasta = async (empleadoId, fechaDesde, fechaHasta) => {
       },
     },
     order: [
-      ["fecha", "DESC"],
-      ["hora", "DESC"],
+      ["id", "DESC"]
     ],
   });
   return egreso;
@@ -111,7 +103,7 @@ const getEgresos = async (fecha) => {
   return egreso;
 };
 
-const getRetrasoEgreso = async(
+const getRetrasoEgreso = async (
   empleadoId,
   fechaDesde,
   fechaHasta,
@@ -130,15 +122,18 @@ const getRetrasoEgreso = async(
 
   let retraso = 0;
   egresos.forEach((hora) => {
-    let egreso = new Date('1970-01-01 '+horaEgreso+':00Z');
+    let egreso = new Date("1970-01-01 " + horaEgreso + ":00Z");
     let egresoRegistrado = new Date(hora.hora);
-    retraso += ((egresoRegistrado.getTime() - egreso.getTime()) > 0) ? egresoRegistrado.getTime() - egreso.getTime() : 0;
+    retraso +=
+      egresoRegistrado.getTime() - egreso.getTime() > 0
+        ? egresoRegistrado.getTime() - egreso.getTime()
+        : 0;
   });
-  retraso = Math.floor((retraso/1000/60) << 0);
+  retraso = Math.floor((retraso / 1000 / 60) << 0);
   retrasoFinal = {
     tiempo: retraso,
-    unidad: 'min'
-  }
+    unidad: "min",
+  };
   return retrasoFinal;
 };
 
@@ -146,9 +141,9 @@ const addNotaAdminEgreso = async (req, res) => {
   const { idEgreso, notaAdmin } = req.body.data;
   const egreso = await Egresos.findByPk(idEgreso);
   if (!egreso) {
-      return res.status(200).json({
-        error: true,
-        message: "No existe el egreso",
+    return res.status(200).json({
+      error: true,
+      message: "No existe el egreso",
     });
   }
   egreso.notaAdmin = notaAdmin;
@@ -158,12 +153,12 @@ const addNotaAdminEgreso = async (req, res) => {
     message: "Nota agregada correctamente",
     egreso,
   });
-}
+};
 
 module.exports = {
   registrarEgreso,
   getEgresosFechaActual,
   getEgresosEmpleado,
   getEgresos,
-  addNotaAdminEgreso
+  addNotaAdminEgreso,
 };
