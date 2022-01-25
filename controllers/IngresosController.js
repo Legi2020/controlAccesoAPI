@@ -69,12 +69,10 @@ const registrarIngresoAdmin = async (req, res) => {
   });
 
   if (ingreso)
-    return res
-      .status(400)
-      .json({
-        message: "Ya hay un ingreso registrado en esta fecha.",
-        error: true,
-      });
+    return res.status(400).json({
+      message: "Ya hay un ingreso registrado en esta fecha.",
+      error: true,
+    });
 
   await Ingresos.create({
     fecha,
@@ -157,7 +155,10 @@ const getIngresosDesdeHasta = async (empleadoId, fechaDesde, fechaHasta) => {
         [Op.between]: [fechaDesde, fechaHasta],
       },
     },
-    order: [["id", "DESC"]],
+    order: [
+      ["fecha", "DESC"],
+      ["hora", "DESC"]
+    ],
   });
   return ingresos;
 };
