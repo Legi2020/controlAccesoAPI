@@ -88,7 +88,8 @@ const getEgresosDesdeHasta = async (empleadoId, fechaDesde, fechaHasta) => {
       },
     },
     order: [
-      ["id", "DESC"]
+      ["fecha", "DESC"],
+      ["hora", "DESC"]
     ],
   });
   return egreso;
