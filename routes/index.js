@@ -12,7 +12,8 @@ const {
   registrarIngreso,
   getIngresosFechaActual,
   getIngresosEmpleado,
-  addNotaAdminIngreso
+  addNotaAdminIngreso,
+  registrarIngresoAdmin
 } = require("../controllers/IngresosController");
 const {
   registrarEgreso,
@@ -38,6 +39,7 @@ router.get("/empleado/:id", getEmpleadoById);
 
 /**Ingresos */
 router.post("/ingreso", registrarIngreso);
+router.post("/ingreso-admin", registrarIngresoAdmin);
 router.get("/ingreso/hoy", getIngresosFechaActual);
 router.post("/ingresos", verificarToken, getIngresosEmpleado);
 router.put("/ingreso/nota", addNotaAdminIngreso);

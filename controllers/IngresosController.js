@@ -6,7 +6,6 @@ const { getFechaActual } = require("../helpers/functions");
 const EmpleadosController = require("./EmpleadosController");
 const Egresos = require("../models/Egresos.js");
 
-
 const registrarIngreso = async (req, res) => {
   const fechaActual = getFechaActual();
   const empleadoId = req.body.data.idEmpleado;
@@ -21,7 +20,7 @@ const registrarIngreso = async (req, res) => {
   }
 
   let egreso = await Egresos.findOne({
-    where: { fecha: fechaActual.fecha, hora:{ [Op.is]: null } , empleadoId },
+    where: { fecha: fechaActual.fecha, hora: { [Op.is]: null }, empleadoId },
   });
 
   if (egreso) {
@@ -40,13 +39,60 @@ const registrarIngreso = async (req, res) => {
 
   await Egresos.create({
     fecha: fechaActual.fecha,
-    empleadoId
+    empleadoId,
   });
 
   return res.status(200).json({
     error: false,
     message: "Ingreso registrado",
     ingreso,
+  });
+};
+
+const registrarIngresoAdmin = async (req, res) => {
+  const empleadoId = req.body.data.empleadoId;
+  const fecha = req.body.data.fecha;
+  const notaAdmin = req.body.data.notaAdmin;
+
+  if (!empleadoId || !fecha || !notaAdmin) {
+    res.status(400).json({
+      message: "Todos los campos son obligatorios.",
+      error: true,
+    });
+  }
+
+  const ingreso = await Ingresos.findOne({
+    where: {
+      fecha,
+      empleadoId,
+    },
+  });
+
+  if (ingreso)
+    return res
+      .status(400)
+      .json({
+        message: "Ya hay un ingreso registrado en esta fecha.",
+        error: true,
+      });
+
+  await Ingresos.create({
+    fecha,
+    hora: null,
+    notaAdmin,
+    empleadoId,
+  });
+
+  await Egresos.create({
+    fecha,
+    hora: null,
+    notaAdmin,
+    empleadoId,
+  });
+
+  res.status(200).json({
+    message: "Ingreso registrado",
+    error: false,
   });
 };
 
@@ -86,7 +132,7 @@ const getIngresosEmpleado = async (req, res) => {
     fechaHasta,
   );
 
-  if(horaIngreso){
+  if (horaIngreso) {
     retraso = await getRetrasoIngreso(
       idEmpleado,
       fechaDesde,
@@ -111,9 +157,7 @@ const getIngresosDesdeHasta = async (empleadoId, fechaDesde, fechaHasta) => {
         [Op.between]: [fechaDesde, fechaHasta],
       },
     },
-    order: [
-      ["id", "DESC"],
-    ],
+    order: [["id", "DESC"]],
   });
   return ingresos;
 };
@@ -145,15 +189,18 @@ const getRetrasoIngreso = async (
   });
   let retraso = 0;
   ingresos.forEach((hora) => {
-    let ingreso = new Date('1970-01-01 '+horaIngreso+':00Z');
+    let ingreso = new Date("1970-01-01 " + horaIngreso + ":00Z");
     let ingresoRegistrado = new Date(hora.hora);
-    retraso += ((ingresoRegistrado.getTime() - ingreso.getTime()) > 0) ? ingresoRegistrado.getTime() - ingreso.getTime() : 0;
+    retraso +=
+      ingresoRegistrado.getTime() - ingreso.getTime() > 0
+        ? ingresoRegistrado.getTime() - ingreso.getTime()
+        : 0;
   });
-  retraso = Math.floor((retraso/1000/60) << 0);
+  retraso = Math.floor((retraso / 1000 / 60) << 0);
   retrasoFinal = {
     tiempo: retraso,
-    unidad: 'min'
-  }
+    unidad: "min",
+  };
   return retrasoFinal;
 };
 
@@ -161,9 +208,9 @@ const addNotaAdminIngreso = async (req, res) => {
   const { idIngreso, notaAdmin } = req.body.data;
   const ingreso = await Ingresos.findByPk(idIngreso);
   if (!ingreso) {
-      return res.status(200).json({
-        error: true,
-        message: "No existe el ingreso",
+    return res.status(200).json({
+      error: true,
+      message: "No existe el ingreso",
     });
   }
   ingreso.notaAdmin = notaAdmin;
@@ -173,7 +220,7 @@ const addNotaAdminIngreso = async (req, res) => {
     message: "Nota agregada correctamente",
     ingreso,
   });
-}
+};
 
 module.exports = {
   registrarIngreso,
@@ -181,5 +228,6 @@ module.exports = {
   getIngresoEmpleadoFechaActual,
   getIngresos,
   getIngresosEmpleado,
-  addNotaAdminIngreso
+  addNotaAdminIngreso,
+  registrarIngresoAdmin,
 };
